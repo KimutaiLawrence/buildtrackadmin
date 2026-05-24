@@ -1,0 +1,43 @@
+# Environment -- never commit secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Vue Language Tools / Volar generated artifacts
+*.vue.js
+*.vue.jsx
+*.vue.ts
+*.vue.tsx
+src/main.js
+src/router/index.js
+src/stores/*.js
+src/lib/*.js
+src/composables/*.js
+src/types/*.js
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# IDEs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
