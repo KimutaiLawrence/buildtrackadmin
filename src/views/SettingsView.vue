@@ -11,6 +11,40 @@ import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
 const toasts = useToasts()
 const authStore = useAuthStore()
 
+// System settings
+interface SystemSetting { key: string; value: string | null; description: string | null; updated_at: string }
+const systemSettings = ref<SystemSetting[]>([])
+const systemSettingEdits = ref<Record<string, string>>({})
+const systemSettingsLoading = ref(false)
+const systemSettingsSaving = ref(false)
+
+async function loadSystemSettings() {
+  systemSettingsLoading.value = true
+  try {
+    const res = await api.get('/v1/admin/system-settings')
+    systemSettings.value = res.data?.data || []
+    systemSettingEdits.value = {}
+    systemSettings.value.forEach((s: SystemSetting) => {
+      systemSettingEdits.value[s.key] = s.value ?? ''
+    })
+  } catch { /* ignore */ } finally {
+    systemSettingsLoading.value = false
+  }
+}
+
+async function saveSystemSetting(key: string) {
+  systemSettingsSaving.value = true
+  try {
+    await api.put(`/v1/admin/system-settings/${key}`, { value: systemSettingEdits.value[key] || null })
+    toasts.success(`Saved ${key}`)
+    loadSystemSettings()
+  } catch (e: unknown) {
+    toasts.error('Failed to save', (e as { message?: string })?.message)
+  } finally {
+    systemSettingsSaving.value = false
+  }
+}
+
 // IP allowlist
 const ipList = ref<{ id: string; cidr: string; label: string }[]>([])
 const newCidr = ref('')
@@ -29,6 +63,7 @@ const profileLoading = ref(false)
 interface IpListResponse { data: { data: { id: string; cidr: string; label: string }[] } }
 
 onMounted(async () => {
+  loadSystemSettings()
   try {
     const res = await api.get('/v1/admin/settings/ip-allowlist') as IpListResponse
     ipList.value = res.data?.data || []
@@ -90,6 +125,33 @@ async function saveProfile() {
 <template>
   <div class="settings">
     <h1 class="view-title">Settings</h1>
+
+    <!-- System Settings -->
+    <div class="card system-settings-card">
+      <div class="card-gold" />
+      <div class="card-header"><h2 class="card-title">Platform System Settings</h2></div>
+      <div class="card-body">
+        <div v-if="systemSettingsLoading" class="loading-text">Loading...</div>
+        <div v-else class="system-settings-list">
+          <div v-for="setting in systemSettings" :key="setting.key" class="system-setting-row">
+            <div class="setting-meta">
+              <div class="setting-key">{{ setting.key }}</div>
+              <div v-if="setting.description" class="setting-desc">{{ setting.description }}</div>
+            </div>
+            <div class="setting-edit">
+              <input
+                v-model="systemSettingEdits[setting.key]"
+                class="setting-input"
+                :placeholder="setting.value || 'null'"
+              />
+              <button class="save-btn" @click="saveSystemSetting(setting.key)" :disabled="systemSettingsSaving">
+                <Save :size="12" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="settings-grid">
       <!-- Profile section -->
@@ -168,4 +230,36 @@ async function saveProfile() {
 .ip-remove:hover { color: #E05454; background: rgba(224,84,84,0.1); }
 .ip-empty { font-size: 12px; color: rgba(242,237,228,0.25); font-style: italic; }
 .add-ip-form { display: flex; flex-direction: column; gap: 12px; }
+
+.system-settings-card { margin: 0; }
+.system-settings-list { display: flex; flex-direction: column; gap: 0; }
+.system-setting-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid rgba(255,255,255,0.04);
+}
+.system-setting-row:last-child { border-bottom: none; }
+.setting-meta { flex: 1; min-width: 0; }
+.setting-key { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #C9963C; }
+.setting-desc { font-size: 11px; color: rgba(242,237,228,0.35); margin-top: 2px; }
+.setting-edit { display: flex; align-items: center; gap: 8px; }
+.setting-input {
+  width: 120px; padding: 5px 8px;
+  background: rgba(255,255,255,0.03);
+  border: 0.5px solid rgba(201,150,60,0.2);
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: #F2EDE4;
+  outline: none;
+}
+.setting-input:focus { border-color: rgba(201,150,60,0.5); }
+.save-btn {
+  background: rgba(201,150,60,0.12); border: 0.5px solid rgba(201,150,60,0.3);
+  border-radius: 3px; cursor: pointer; color: #C9963C;
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; transition: all 0.15s; flex-shrink: 0;
+}
+.save-btn:hover { background: rgba(201,150,60,0.22); }
+.save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.loading-text { font-size: 12px; color: rgba(242,237,228,0.4); }
 </style>

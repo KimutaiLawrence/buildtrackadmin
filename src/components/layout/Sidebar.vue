@@ -3,7 +3,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import {
   LayoutDashboard, Users, FolderKanban, UserCheck, Upload,
-  ClipboardCheck, Bell, ScrollText, CreditCard, Settings, LogOut
+  ClipboardCheck, Bell, ScrollText, CreditCard, Settings, LogOut,
+  Workflow, Shield
 } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
@@ -19,6 +20,8 @@ const navItems = [
   { path: '/notifications', label: 'Notifications', icon: Bell },
   { path: '/audit-log', label: 'Audit Log', icon: ScrollText },
   { path: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
+  { path: '/workflows', label: 'Workflows', icon: Workflow },
+  { path: '/roles', label: 'Roles', icon: Shield },
   { path: '/settings', label: 'Settings', icon: Settings },
 ]
 

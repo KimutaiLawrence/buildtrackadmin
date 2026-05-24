@@ -16,6 +16,8 @@ const routes = [
   { path: '/audit-log', component: () => import('@/views/AuditLogView.vue') },
   { path: '/subscriptions', component: () => import('@/views/SubscriptionsView.vue') },
   { path: '/settings', component: () => import('@/views/SettingsView.vue') },
+  { path: '/workflows', component: () => import('@/views/WorkflowsView.vue') },
+  { path: '/roles', component: () => import('@/views/RolesView.vue') },
 ]
 
 const router = createRouter({
